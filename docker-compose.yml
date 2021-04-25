@@ -1,0 +1,32 @@
+version: "3"
+services:
+  roda-storage:
+    image: minio/minio:latest
+    ports:
+      - "127.0.0.1:29000:9000"
+    environment:
+      - VIRTUAL_HOST=${STORAGE_VIRTUAL_HOST}
+    volumes:
+      - ".data:/export"
+    env_file:
+      - .env
+    command: server /export
+    networks:
+      - uproda-proxy-network
+
+  roda-image:
+    build:
+      context: nginx
+      dockerfile: "Dockerfile"
+    environment:
+      - VIRTUAL_HOST=${IMAGE_VIRTUAL_HOST}
+    volumes:
+      - ".data/${IMAGE_PATH}:/var/www/html"
+    ports:
+      - "127.0.0.1:3082:80"
+    networks:
+      - uproda-proxy-network
+
+networks:
+  uproda-proxy-network:
+    external: true
